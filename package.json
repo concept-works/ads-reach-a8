@@ -1,0 +1,74 @@
+{
+  "name": "ads-reach-a8",
+  "version": "0.5.1",
+  "private": true,
+  "description": "A8.net authenticated HTTP/JSON data collector (manual browser login)",
+  "main": "src/main.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable --x64 --publish never",
+    "build:mac": "electron-builder --mac dmg --universal --publish never"
+  },
+  "dependencies": {
+    "playwright-core": "^1.55.0",
+    "cheerio": "1.0.0"
+  },
+  "devDependencies": {
+    "electron": "37.2.6",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "jp.ads-reach.a8.standalone",
+    "productName": "ADS-REACH-A8",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/playwright-core/**"
+    ],
+    "files": [
+      "src/**/*",
+      "package.json",
+      "node_modules/playwright-core/**/*"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "icon": "build/ADS-REACH.ico",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-portable-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "ADS-REACH-A8",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "allowElevation": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "icon": "build/ADS-REACH.icns",
+      "category": "public.app-category.business",
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
+  }
+}

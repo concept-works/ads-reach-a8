@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADS-REACH-A8</title>
+<style>
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,'Yu Gothic',sans-serif;margin:0;padding:20px;background:#f4f6f9;color:#162437}main{max-width:760px;margin:0 auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 10px 25px #16344916}h1{font-size:27px;margin:0}small{color:#516072}.notice{background:#eef5ff;border-radius:9px;padding:15px;margin:16px 0;line-height:1.8;font-size:14px}.notice strong{display:block;margin-bottom:3px}.notice p{margin:0 0 8px}.notice ol{margin:0;padding-left:1.5em}.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}button{background:#1466cf;border:0;color:white;border-radius:8px;padding:13px 8px;cursor:pointer;font-weight:bold;font-size:14px;width:100%}button:disabled{opacity:.45;cursor:not-allowed}.progress-title{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:13px}.bar{height:13px;background:#e4eaf0;border-radius:10px;overflow:hidden;margin:16px 0 8px}.fill{height:100%;width:0;background:#1c83ea;transition:width .2s}pre{background:#f0f3f7;min-height:145px;max-height:300px;overflow:auto;padding:15px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.6}h3{font-size:16px}
+</style></head><body><main><h1>ADS-REACH-A8</h1><small>v0.5.1 / HTTP高速取得版</small>
+<div class="notice"><strong>使い方</strong><p>A8.net専用のローカルCSV取得ツールです。</p><ol><li>まず ①ログイン ボタンをクリックしてログインしてください。</li><li>ログイン後、画面を開いたまま ②取得開始 ボタンをクリックしてください。</li><li>2本の進捗バーに一覧データとNGワードの取得状況が表示されます。</li><li>取得が完了したら ③CSV保存 ボタンをクリックしてください。</li></ol></div>
+<div class="actions"><button id="open">①ログイン</button><button id="run">②取得開始</button><button id="save" disabled>③CSV保存</button></div>
+<div class="progress-title"><strong>STEP 1：一覧データ取得</strong><span id="listPct">0%</span></div><div class="bar"><div class="fill" id="listFill"></div></div>
+<div class="progress-title"><strong>STEP 2：NGワード取得</strong><span id="detailPct">0%</span></div><div class="bar"><div class="fill" id="detailFill"></div></div><div id="status" aria-live="polite">待機中</div><h3>進捗・取得ログ</h3><pre id="log"></pre>
+</main><script>
+const $=id=>document.getElementById(id),log=s=>{$('log').textContent+=`${new Date().toLocaleTimeString()} ${s}\n`;$('log').scrollTop=$('log').scrollHeight};
+let busy=false,ready=false;function lock(x){busy=x;$('open').disabled=x;$('run').disabled=x;$('save').disabled=x||!ready;}
+async function act(fn){lock(true);try{const r=await fn();if(!r.ok)throw Error(r.message||'操作に失敗しました');return r}catch(e){log('エラー: '+e.message);$('status').textContent='エラー: '+e.message;return null}finally{lock(false)}}
+$('open').onclick=()=>act(window.a8.open);
+$('run').onclick=async()=>{ready=false;for(const id of ['listFill','detailFill'])$(id).style.width='0%';$('listPct').textContent='0%';$('detailPct').textContent='0%';const r=await act(window.a8.run);if(r){ready=true;$('save').disabled=false;log(`${r.count}件取得。CSVを保存してください。`);}};
+$('save').onclick=async()=>{const r=await act(window.a8.save);if(r&&!r.canceled)log('保存完了: '+r.path)};
+window.a8.onProgress(({message,percent,stage})=>{
+ log(message);$('status').textContent=message;
+ if(typeof percent==='number'&&(stage==='list'||stage==='detail')){
+  const pct=Math.max(0,Math.min(100,percent));
+  const fill=stage==='list'?'listFill':'detailFill';
+  const label=stage==='list'?'listPct':'detailPct';
+  $(fill).style.width=pct+'%';$(label).textContent=Math.floor(pct)+'%';
+ }
+});
+</script></body></html>
